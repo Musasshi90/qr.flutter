@@ -5,12 +5,14 @@
  */
 import 'package:flutter/widgets.dart';
 import 'package:qr/qr.dart';
+import 'dart:ui' as sky;
 
 typedef void QrError(dynamic error);
 
 class QrPainter extends CustomPainter {
-  QrPainter(String data, this.color, this.version, this.errorCorrectionLevel,
-      {this.onError})
+  QrPainter(String data, this.color, this.version, this.image,
+      this.errorCorrectionLevel,
+      {this.onError, this.logoSize, this.boxFit})
       : this._qr = new QrCode(version, errorCorrectionLevel) {
     _p.color = this.color;
     // configure and make the QR code data
@@ -34,6 +36,10 @@ class QrPainter extends CustomPainter {
   final int errorCorrectionLevel; // the qr code error correction level
   final Color color; // the color of the dark squares
   final QrError onError;
+  final double logoSize;
+  final BoxFit boxFit;
+  sky.Image image;
+  bool isRestore = false;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -52,6 +58,29 @@ class QrPainter extends CustomPainter {
         }
       }
     }
+
+    if (image != null) {
+      double widthOfImage = size.width / 3;
+      double heightOfImage = size.height / 3;
+
+      final Rect rect = Offset.zero & size;
+      //resize the image
+      Size resizedImageSize = new Size(
+          logoSize == null ? widthOfImage : logoSize,
+          logoSize == null ? heightOfImage : logoSize);
+      final Size originalImageSize =
+          new Size(image.width.toDouble(), image.height.toDouble());
+      FittedSizes sizes = applyBoxFit(
+          this.boxFit == null ? BoxFit.contain : this.boxFit,
+          originalImageSize,
+          resizedImageSize);
+      // if you don't want it centered for some reason change this.
+      final Rect inputSubrect = Alignment.center
+          .inscribe(sizes.source, Offset.zero & originalImageSize);
+      final Rect outputSubrect =
+          Alignment.center.inscribe(sizes.destination, rect);
+      canvas.drawImageRect(image, inputSubrect, outputSubrect, new Paint());
+    }
   }
 
   @override
@@ -60,7 +89,8 @@ class QrPainter extends CustomPainter {
       return this.color != oldDelegate.color ||
           this.errorCorrectionLevel != oldDelegate.errorCorrectionLevel ||
           this.version != oldDelegate.version ||
-          this._qr != oldDelegate._qr;
+          this._qr != oldDelegate._qr ||
+          this.image != oldDelegate.image;
     }
     return false;
   }
