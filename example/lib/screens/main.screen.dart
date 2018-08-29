@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'dart:ui' as sky;
 
 class MainScreen extends StatefulWidget {
   @override
@@ -14,6 +15,7 @@ class _MainScreenState extends State<MainScreen> {
   String _dataString = "Hello from this QR code!";
   String _inputErrorText;
   final TextEditingController _textController = new TextEditingController();
+  sky.Image image;
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +29,16 @@ class _MainScreenState extends State<MainScreen> {
   didUpdateWidget(Widget oldWidget) {
     super.didUpdateWidget(oldWidget);
     setState(() {});
+  }
+
+
+  @override
+  void initState() {
+    ImageLoader.load("images/logo.png").then((sky.Image image) {
+      setState(() {
+        this.image = image;
+      });
+    });
   }
 
   _contentWidget() {
@@ -78,6 +90,8 @@ class _MainScreenState extends State<MainScreen> {
             child: new Center(
               child: new QrImage(
                 data: _dataString,
+                image: this.image,
+                boxFit: BoxFit.contain,
                 onError: (ex) {
                   print("[QR] ERROR - $ex");
                   setState(() {
