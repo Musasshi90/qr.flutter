@@ -5,3 +5,4 @@
  */
 export 'src/qr_image.dart';
 export 'src/qr_painter.dart';
+export 'src/image_loader.dart';
